@@ -1,7 +1,9 @@
 ---
 title: "Oyster ploidy field study survival analysis"
-output: html_notebook
-editor_options: 
+output:
+  html_document:
+    df_print: paged
+editor_options:
   chunk_output_type: console
   theme: sky
   code_folding: hide
@@ -20,6 +22,47 @@ Read in the mortality data from the field experiments
 ```{r}
 survdat <- read.csv(here("Data", "MAY_SEPT_2023_MORTSBYBAG.csv"))
 ```
+
+Ensure data structure is correct
+
+```{r}
+survdat <- survdat %>% mutate_at(c("Site", "Bag_Col", "Month", "Bag_no", "Month_no"), as.factor)
+```
+
+Inspect the data structure
+
+```{r}
+str(survdat)
+```
+
+Create a new data sheet that calculates teh number of survivors at each sampling event (as opposed to the number of mortalities)
+
+```{r}
+widebagmort <- pivot_wider(survdat[-c(6)], names_from = Month, values_from = Mort_count)
+#replace NA in the mortality columns with 0
+widebagmort <- widebagmort %>%
+  mutate_at(vars(May, June, July, Aug, September), ~replace_na(., 0))
+widebagmort$May_survivors <- 50-widebagmort$May
+widebagmort$June_survivors <- widebagmort$May_survivors-widebagmort$June
+widebagmort$July_survivors <- widebagmort$June_survivors-widebagmort$July
+widebagmort$Aug_survivors <- widebagmort$July_survivors-widebagmort$Aug
+widebagmort$Sept_survivors <- widebagmort$Aug_survivors-widebagmort$September
+
+no_survivors <- widebagmort %>% pivot_longer(cols=c(9:12),
+                                                         names_to='Month_survivor',
+                                                         values_to='No_survivors') %>% 
+  select("Site", "Bag_Col", "Bag_no",'Month_survivor','No_survivors')
+
+no_survivors
+```
+
+Double check that all bags are accounted for. There should be 8 bags per site
+
+```{r}
+widebagmort %>% group_by(Site, Bag_Col) %>% summarise(nbags=n())
+```
+
+
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
