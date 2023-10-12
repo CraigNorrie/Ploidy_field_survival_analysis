@@ -11,7 +11,7 @@ editor_options:
 
 Load the required packages
 
-```{r}
+```{r, results=FALSE, warning=FALSE}
 library(tidyverse)
 library(here)
 library(survival)
@@ -23,21 +23,17 @@ Read in the mortality data from the field experiments
 survdat <- read.csv(here("Data", "MAY_SEPT_2023_MORTSBYBAG.csv"))
 ```
 
-Ensure data structure is correct
+Correct the data structure
 
 ```{r}
 survdat <- survdat %>% mutate_at(c("Site", "Bag_Col", "Month", "Bag_no", "Month_no"), as.factor)
-```
-
-Inspect the data structure
-
-```{r}
 str(survdat)
 ```
 
-Create a new data sheet that calculates teh number of survivors at each sampling event (as opposed to the number of mortalities)
 
-```{r}
+Create a new data sheet that calculates the number of survivors at each sampling event (as opposed to the number of moralities)
+
+```{r, echo=FALSE}
 widebagmort <- pivot_wider(survdat[-c(6)], names_from = Month, values_from = Mort_count)
 #replace NA in the mortality columns with 0
 widebagmort <- widebagmort %>%
@@ -52,16 +48,32 @@ no_survivors <- widebagmort %>% pivot_longer(cols=c(9:12),
                                                          names_to='Month_survivor',
                                                          values_to='No_survivors') %>% 
   select("Site", "Bag_Col", "Bag_no",'Month_survivor','No_survivors')
-
+no_survivors$Month_survivor <- as.factor(no_survivors$Month_survivor)
 no_survivors
 ```
 
-Double check that all bags are accounted for. There should be 8 bags per site
+Double check that all bags are accounted for. There should be 8 bags per site per sampling event = 32 as of September 2023
 
 ```{r}
-widebagmort %>% group_by(Site, Bag_Col) %>% summarise(nbags=n())
+no_survivors %>% group_by(Site, Bag_Col) %>% summarise(nbags=n())
 ```
 
+Create a basic survival plot taht shows the number of survivors at each sampling event
+
+```{r}
+mean_survival_proportion <- no_survivors %>% 
+  group_by(Site, Bag_Col, Month_survivor) %>% 
+  summarise(meansurv=mean(No_survivors), semsurv=sd(No_survivors)/sqrt(n()))
+
+mean_survival_proportion %>% ggplot(aes(x=factor(Month_survivor, level=c('May_survivors', 'June_survivors', 'July_survivors', 'Aug_survivors', 'Sept_survivors')), 
+             y=meansurv, colour = Bag_Col, group=Bag_Col))+
+  scale_x_discrete(labels=c('May', 'June', 'July', 'August', 'September'))+
+  scale_color_manual(values=c('blue', 'green', 'red'), name = "Ploidy", labels = c("Diploid", "Induced Triploid", "Mated Triploid"))+
+  geom_errorbar(aes(ymin=meansurv-semsurv, ymax=meansurv+semsurv))+
+  geom_line()+facet_grid(~Site)+
+  xlab("Month")+ylab("Mean number of survivors per bag (± SEM)")+
+  theme_bw()+ggtitle("Number of survivors since experiment start")
+```
 
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
