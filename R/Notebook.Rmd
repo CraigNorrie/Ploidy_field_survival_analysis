@@ -13,7 +13,7 @@ Survival analysis to the end of 2023 for oyster ploidy project
 
 ## Read in the data and create basic tables and graphs
 
-Load the required packages
+Load the required packages. Using survival package that was updated in August 2023
 
 ```{r, results=FALSE, warning=FALSE, error=FALSE, message=FALSE, }
 library(tidyverse)
@@ -41,13 +41,14 @@ widebagmort <- pivot_wider(survdat[-c(6)], names_from = Month, values_from = Mor
 #replace NA in the mortality columns with 0
 widebagmort <- widebagmort %>%
   mutate_at(vars(May, June, July, Aug, September), ~replace_na(., 0))
-widebagmort$May_survivors <- 50-widebagmort$May
+widebagmort$April_survivors <- 50
+widebagmort$May_survivors <- widebagmort$April_survivors-widebagmort$May
 widebagmort$June_survivors <- widebagmort$May_survivors-widebagmort$June
 widebagmort$July_survivors <- widebagmort$June_survivors-widebagmort$July
 widebagmort$Aug_survivors <- widebagmort$July_survivors-widebagmort$Aug
 widebagmort$Sept_survivors <- widebagmort$Aug_survivors-widebagmort$September
 
-no_survivors <- widebagmort %>% pivot_longer(cols=c(9:12),
+no_survivors <- widebagmort %>% pivot_longer(cols=c(9:14),#######################As months are added make sure their columns are selected - change to an auto thing*************
                                                          names_to='Month_survivor',
                                                          values_to='No_survivors') %>% 
   select("Site", "Bag_Col", "Bag_no",'Month_survivor','No_survivors')
@@ -55,7 +56,7 @@ no_survivors$Month_survivor <- as.factor(no_survivors$Month_survivor)
 no_survivors
 ```
 
-Double check that all bags are accounted for. There should be 8 bags per site per sampling event = 32 as of September 2023
+Double check that all bags are accounted for. There should be 8 bags per site per sampling event = 48 as of September 2023
 
 ```{r, echo=FALSE}
 no_survivors %>% group_by(Site, Bag_Col) %>% summarise(nbags=n())
@@ -76,15 +77,50 @@ Create a basic survival plot taht shows the number of survivors at each sampling
 ```{r, echo=FALSE}
 
 
-mean_survival_proportion %>% ggplot(aes(x=factor(Month_survivor, level=c('May_survivors', 'June_survivors', 'July_survivors', 'Aug_survivors', 'Sept_survivors')), 
+mean_survival_proportion %>% ggplot(aes(x=factor(Month_survivor, level=c("April_survivors", 'May_survivors', 'June_survivors', 'July_survivors', 'Aug_survivors', 'Sept_survivors')), ###add new months here**********
              y=meansurv, colour = Bag_Col, group=Bag_Col))+
-  scale_x_discrete(labels=c('May', 'June', 'July', 'August', 'September'))+
+  scale_x_discrete(labels=c('April', 'May', 'June', 'July', 'August', 'September'))+####################Add new months here ***********************
   scale_color_manual(values=c('blue', 'green', 'red'), name = "Ploidy", labels = c("Diploid", "Induced Triploid", "Mated Triploid"))+
   geom_errorbar(aes(ymin=meansurv-semsurv, ymax=meansurv+semsurv))+
   geom_line()+facet_grid(~Site)+
   xlab("Month")+ylab("Mean number of survivors per bag (± SEM)")+
   theme_bw()+ggtitle("Number of survivors since experiment start")
 ```
+
+## Start survival analyses
+
+
+
+The first thing I did was create a constant variable for the number of montly sampling events I have. This just makes my life easier by not constantly changing the number of months I have when I add new data
+
+```{r}
+months <- 5
+```
+
+Need to turn the data into individual survival data. Each oyster should be listed with either alive or dead at each sampling point. Each oyster will need an ID number. 8 Cages per ploidy per site were monitored for mortality so a total of 400 oysters per ploidy per site at the start. Total of 4800 oysters
+
+```{r}
+#the uncount function may work here
+#Count just the April individuals to get ID numbers for each individual at the start
+no_survivorsexpanded_April <- no_survivors %>% filter(Month_survivor == 'April_survivors') %>% #repeats each row by the number of times in April_survivors col
+  uncount(No_survivors) 
+no_survivorsexpanded_April$BAG_ID <- paste0(no_survivorsexpanded_April$Site, no_survivorsexpanded_April$Bag_Col, no_survivorsexpanded_April$Bag_no, "_")#creates a (non unnique ID) number for each oyster this is not unique becuse I want to match it to my mortality 
+#Adds a unique within bag ID number to each oyster in April
+no_survivorsexpanded_April$OYS_ID <- rep(1:50, times = nrow(no_survivorsexpanded_April)/50)
+#the next step is to uncount the data from the remaining months
+no_survivorsexpanded_allmonths_noapril <- no_survivors %>% 
+  filter(Month_survivor != 'April_survivors')
+
+#now I want to repeat this 5 times, once for each individual  
+no_survivorsexpanded <- no_survivorsexpanded %>% slice(rep(1:n(), each = 5))
+#Now I want 
+no_survivorsexpanded
+no_survivorsexpanded <- no_survivors %>% 
+  uncount(No_survivors)
+no_survivorsexpanded$ID <- paste0(no_survivorsexpanded$Site, no_survivorsexpanded$Bag_Col, no_survivorsexpanded$Bag_no, "_",  )  #give everyone an ID number
+
+```
+
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
