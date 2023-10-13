@@ -9,9 +9,13 @@ editor_options:
   code_folding: hide
 ---
 
+Survival analysis to the end of 2023 for oyster ploidy project
+
+## Read in the data and create basic tables and graphs
+
 Load the required packages
 
-```{r, results=FALSE, warning=FALSE}
+```{r, results=FALSE, warning=FALSE, error=FALSE, message=FALSE, }
 library(tidyverse)
 library(here)
 library(survival)
@@ -30,10 +34,9 @@ survdat <- survdat %>% mutate_at(c("Site", "Bag_Col", "Month", "Bag_no", "Month_
 str(survdat)
 ```
 
-
 Create a new data sheet that calculates the number of survivors at each sampling event (as opposed to the number of moralities)
 
-```{r, echo=FALSE}
+```{r}
 widebagmort <- pivot_wider(survdat[-c(6)], names_from = Month, values_from = Mort_count)
 #replace NA in the mortality columns with 0
 widebagmort <- widebagmort %>%
@@ -54,16 +57,24 @@ no_survivors
 
 Double check that all bags are accounted for. There should be 8 bags per site per sampling event = 32 as of September 2023
 
-```{r}
+```{r, echo=FALSE}
 no_survivors %>% group_by(Site, Bag_Col) %>% summarise(nbags=n())
+```
+
+Sumarise the number of survivors per site per sampling event
+
+```{r, echo=FALSE}
+mean_survival_proportion <- no_survivors %>% 
+  group_by(Site, Bag_Col, Month_survivor) %>% 
+  summarise(meansurv=mean(No_survivors), semsurv=sd(No_survivors)/sqrt(n()))
+
+mean_survival_proportion
 ```
 
 Create a basic survival plot taht shows the number of survivors at each sampling event
 
-```{r}
-mean_survival_proportion <- no_survivors %>% 
-  group_by(Site, Bag_Col, Month_survivor) %>% 
-  summarise(meansurv=mean(No_survivors), semsurv=sd(No_survivors)/sqrt(n()))
+```{r, echo=FALSE}
+
 
 mean_survival_proportion %>% ggplot(aes(x=factor(Month_survivor, level=c('May_survivors', 'June_survivors', 'July_survivors', 'Aug_survivors', 'Sept_survivors')), 
              y=meansurv, colour = Bag_Col, group=Bag_Col))+
@@ -74,7 +85,6 @@ mean_survival_proportion %>% ggplot(aes(x=factor(Month_survivor, level=c('May_su
   xlab("Month")+ylab("Mean number of survivors per bag (± SEM)")+
   theme_bw()+ggtitle("Number of survivors since experiment start")
 ```
-
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
