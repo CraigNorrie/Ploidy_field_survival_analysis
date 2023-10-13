@@ -108,14 +108,17 @@ no_survivorsexpanded_April$BAG_ID <- paste0(no_survivorsexpanded_April$Site, no_
 #Adds a unique within bag ID number to each oyster in April
 no_survivorsexpanded_April$OYS_ID <- rep(1:50, times = nrow(no_survivorsexpanded_April)/50)
 no_survivorsexpanded_April$status <- 0 #gives everyone who is alive a status of 0
-#the next step is to uncount the data from the remaining months
+
+
 no_survivorsexpanded_noapril <- no_survivors %>% 
-  filter(Month_survivor != 'April_survivors') %>% 
-  uncount(No_survivors)
-#no_survivorsexpanded_noapril$BAG_ID <- paste0(no_survivorsexpanded_noapril$Site, no_survivorsexpanded_noapril$Bag_Col, no_survivorsexpanded_noapril$Bag_no, "_") #Give these individuals a bag code thats the same as for april
+  filter(Month_survivor != "April_survivors") %>% pivot_wider(names_from = Month_survivor, values_from = No_survivors)
+no_survivorsexpanded_noapril$BAG_ID <- paste0(no_survivorsexpanded_noapril$Site, no_survivorsexpanded_noapril$Bag_Col, no_survivorsexpanded_noapril$Bag_no, "_") #Give these individuals a bag code thats the same as for april
+#take the April DF and join it with filtered DF for each month that has been uncounted
+survival_status <- no_survivorsexpanded_April %>% full_join((select(no_survivorsexpanded_noapril, "May_survivors", "BAG_ID") %>% uncount(May_survivors)), by = "BAG_ID")
+
 no_survivorsexpanded_noapril$status <- 0#Gives everyone alive a status 0
-no_survivorsexpanded_noapril <- no_survivorsexpanded_noapril %>% 
-  pivot_wider(names_from = Month_survivor, values_from = status) #Pivot this data wider so that I can do a join
+no_survivorsexpanded_noapril1 <- no_survivorsexpanded_noapril %>% 
+   #Pivot this data wider so that I can do a join
 
 ```
 
