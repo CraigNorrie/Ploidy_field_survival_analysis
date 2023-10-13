@@ -104,10 +104,21 @@ Need to turn the data into individual survival data. Each oyster should be liste
 #Count just the April individuals to get ID numbers for each individual at the start
 no_survivorsexpanded_April <- no_survivors %>% filter(Month_survivor == 'April_survivors') %>% #repeats each row by the number of times in April_survivors col
   uncount(No_survivors) 
-no_survivorsexpanded_April$BAG_ID <- paste0(no_survivorsexpanded_April$Site, no_survivorsexpanded_April$Bag_Col, no_survivorsexpanded_April$Bag_no, "_")#creates a (non unnique ID) number for each oyster this is not unique becuse I want to match it to my mortality 
+no_survivorsexpanded_April$BAG_ID <- paste0(no_survivorsexpanded_April$Site, no_survivorsexpanded_April$Bag_Col, no_survivorsexpanded_April$Bag_no, "_")#gives each oyster a bag id column to match with others
 #Adds a unique within bag ID number to each oyster in April
 no_survivorsexpanded_April$OYS_ID <- rep(1:50, times = nrow(no_survivorsexpanded_April)/50)
 no_survivorsexpanded_April$status <- 0 #gives everyone who is alive a status of 0
+##################################################
+#Repeat for each month
+no_survivorsexpanded_May <- no_survivors %>% filter(Month_survivor == 'May_survivors') %>% #repeats each row by the number of times in May_survivors col
+  uncount(No_survivors) 
+no_survivorsexpanded_May$BAG_ID <- paste0(no_survivorsexpanded_May$Site, no_survivorsexpanded_May$Bag_Col, no_survivorsexpanded_May$Bag_no, "_")#creates a (non unnique ID) number for each oyster this is not unique becuse I want to match it to my mortality 
+#Adds a unique within bag ID number to each oyster in May
+no_survivorsexpanded_May$status <- 0 #gives everyone who is alive a status of 0
+#Join them together
+allsurvdat <- full_join(no_survivorsexpanded_April, no_survivorsexpanded_May, by = "BAG_ID")
+
+
 
 
 no_survivorsexpanded_noapril <- no_survivors %>% 
