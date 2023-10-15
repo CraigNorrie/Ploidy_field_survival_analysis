@@ -40,13 +40,13 @@ Create a new data sheet that calculates the number of survivors at each sampling
 widebagmort <- pivot_wider(survdat[-c(6)], names_from = Month, values_from = Mort_count)
 #replace NA in the mortality columns with 0
 widebagmort <- widebagmort %>%
-  mutate_at(vars(May, June, July, Aug, September), ~replace_na(., 0))
+  mutate_at(vars(May, June, July, August, September), ~replace_na(., 0))
 widebagmort$April_survivors <- 50
 widebagmort$May_survivors <- widebagmort$April_survivors-widebagmort$May
 widebagmort$June_survivors <- widebagmort$May_survivors-widebagmort$June
 widebagmort$July_survivors <- widebagmort$June_survivors-widebagmort$July
-widebagmort$Aug_survivors <- widebagmort$July_survivors-widebagmort$Aug
-widebagmort$Sept_survivors <- widebagmort$Aug_survivors-widebagmort$September
+widebagmort$August_survivors <- widebagmort$July_survivors-widebagmort$August
+widebagmort$Sept_survivors <- widebagmort$August_survivors-widebagmort$September
 
 no_survivors <- widebagmort %>% pivot_longer(cols=c(9:14),#######################As months are added make sure their columns are selected - change to an auto thing*************
                                                          names_to='Month_survivor',
@@ -56,7 +56,7 @@ no_survivors$Month_survivor <- as.factor(no_survivors$Month_survivor)
 no_survivors
 ```
 
-Double check that all bags are accounted for. There should be 8 bags per site per sampling event = 48 as of September 2023
+Double check that all bags are accounted for. There should be 8 bags per colour site per sampling event = 48 as of September 2023
 
 ```{r, echo=FALSE}
 no_survivors %>% group_by(Site, Bag_Col) %>% summarise(nbags=n())
@@ -77,7 +77,7 @@ Create a basic survival plot taht shows the number of survivors at each sampling
 ```{r, echo=FALSE}
 
 
-mean_survival_proportion %>% ggplot(aes(x=factor(Month_survivor, level=c("April_survivors", 'May_survivors', 'June_survivors', 'July_survivors', 'Aug_survivors', 'Sept_survivors')), ###add new months here**********
+mean_survival_proportion %>% ggplot(aes(x=factor(Month_survivor, level=c("April_survivors", 'May_survivors', 'June_survivors', 'July_survivors', 'August_survivors', 'Sept_survivors')), ###add new months here**********
              y=meansurv, colour = Bag_Col, group=Bag_Col))+
   scale_x_discrete(labels=c('April', 'May', 'June', 'July', 'August', 'September'))+####################Add new months here ***********************
   scale_color_manual(values=c('blue', 'green', 'red'), name = "Ploidy", labels = c("Diploid", "Induced Triploid", "Mated Triploid"))+
@@ -94,43 +94,90 @@ mean_survival_proportion %>% ggplot(aes(x=factor(Month_survivor, level=c("April_
 The first thing I did was create a constant variable for the number of montly sampling events I have. This just makes my life easier by not constantly changing the number of months I have when I add new data
 
 ```{r}
-months <- 5#Change with each sampling event
+#months <- 5#Change with each sampling event
 ```
 
 Need to turn the data into individual survival data. Each oyster should be listed with either alive or dead at each sampling point. Each oyster will need an ID number. 8 Cages per ploidy per site were monitored for mortality so a total of 400 oysters per ploidy per site at the start. Total of 4800 oysters. 
 
+This is a very clunky way to do this and needs to be streamlined
+
 ```{r}
-#the uncount function may work here
+#the uncount function will work here
 #Count just the April individuals to get ID numbers for each individual at the start
-no_survivorsexpanded_April <- no_survivors %>% filter(Month_survivor == 'April_survivors') %>% #repeats each row by the number of times in April_survivors col
-  uncount(No_survivors) 
-no_survivorsexpanded_April$BAG_ID <- paste0(no_survivorsexpanded_April$Site, no_survivorsexpanded_April$Bag_Col, no_survivorsexpanded_April$Bag_no, "_")#gives each oyster a bag id column to match with others
-#Adds a unique within bag ID number to each oyster in April
-no_survivorsexpanded_April$OYS_ID <- rep(1:50, times = nrow(no_survivorsexpanded_April)/50)
-no_survivorsexpanded_April$status <- 0 #gives everyone who is alive a status of 0
-##################################################
-#Repeat for each month
-no_survivorsexpanded_May <- no_survivors %>% filter(Month_survivor == 'May_survivors') %>% #repeats each row by the number of times in May_survivors col
-  uncount(No_survivors) 
-no_survivorsexpanded_May$BAG_ID <- paste0(no_survivorsexpanded_May$Site, no_survivorsexpanded_May$Bag_Col, no_survivorsexpanded_May$Bag_no, "_")#creates a (non unnique ID) number for each oyster this is not unique becuse I want to match it to my mortality 
-#Adds a unique within bag ID number to each oyster in May
-no_survivorsexpanded_May$status <- 0 #gives everyone who is alive a status of 0
-#Join them together
-allsurvdat <- full_join(no_survivorsexpanded_April, no_survivorsexpanded_May, by = "BAG_ID")
+no_survivorsexpanded_April <- no_survivors %>% filter(Month_survivor == 'April_survivors') %>% 
+  uncount(No_survivors) #repeats each row by the number of times in April_survivors col
+#Give each individual an ID number from 1-50
+no_survivorsexpanded_April$OYS_ID <- rep(1:50, times = nrow(no_survivorsexpanded_April)/50) #Gives each a number
+no_survivorsexpanded_April$OYS_ID <- paste0(no_survivorsexpanded_April$Site, no_survivorsexpanded_April$Bag_Col,
+                                            no_survivorsexpanded_April$Bag_no, "_", no_survivorsexpanded_April$OYS_ID)
+no_survivorsexpanded_April$April_status <- 0 #gives everyone who is alive a status of 0
+##Do this for each month ##MAY##
+no_survivorsexpanded_May <- no_survivors %>% filter(Month_survivor == 'May_survivors') %>% 
+  uncount(No_survivors) #repeats each row by the number of times in May_survivors col
+no_survivorsexpanded_May <- no_survivorsexpanded_May %>% #Gives each individual in each bag a number (max of 50)
+  group_by(Site, Bag_Col, Bag_no) %>% 
+  mutate(OYS_ID = (row_number() - 1) %% 50 + 1)
+no_survivorsexpanded_May$OYS_ID <- paste0(no_survivorsexpanded_May$Site, no_survivorsexpanded_May$Bag_Col,
+                                          no_survivorsexpanded_May$Bag_no, "_", no_survivorsexpanded_May$OYS_ID)
+no_survivorsexpanded_May$May_status <- 0 #gives everyone who is alive a status of 0
+ind_surv_dat <- left_join(select(no_survivorsexpanded_April, Site, Bag_Col, Bag_no, OYS_ID, April_status),
+                          select(no_survivorsexpanded_May, OYS_ID, May_status),
+                          by = "OYS_ID")#Join this to the april data
 
+##Do this for each month ##June##
+no_survivorsexpanded_June <- no_survivors %>% filter(Month_survivor == 'June_survivors') %>% 
+  uncount(No_survivors) #repeats each row by the number of times in May_survivors col
+no_survivorsexpanded_June <- no_survivorsexpanded_June %>% #Gives each individual in each bag a number (max of 50)
+  group_by(Site, Bag_Col, Bag_no) %>% 
+  mutate(OYS_ID = (row_number() - 1) %% 50 + 1)
+no_survivorsexpanded_June$OYS_ID <- paste0(no_survivorsexpanded_June$Site, no_survivorsexpanded_June$Bag_Col,
+                                          no_survivorsexpanded_June$Bag_no, "_", no_survivorsexpanded_June$OYS_ID)
+no_survivorsexpanded_June$June_status <- 0 #gives everyone who is alive a status of 0
+ind_surv_dat <- left_join(ind_surv_dat,
+                          no_survivorsexpanded_June,
+                          by = "OYS_ID") #Join this to the existing data
 
+##Do this for each month ##July##
+no_survivorsexpanded_July <- no_survivors %>% filter(Month_survivor == 'July_survivors') %>% 
+  uncount(No_survivors) #repeats each row by the number of times in May_survivors col
+no_survivorsexpanded_July <- no_survivorsexpanded_July %>% #Gives each individual in each bag a number (max of 50)
+  group_by(Site, Bag_Col, Bag_no) %>% 
+  mutate(OYS_ID = (row_number() - 1) %% 50 + 1)
+no_survivorsexpanded_July$OYS_ID <- paste0(no_survivorsexpanded_July$Site, no_survivorsexpanded_July$Bag_Col,
+                                          no_survivorsexpanded_July$Bag_no, "_", no_survivorsexpanded_July$OYS_ID)
+no_survivorsexpanded_July$July_status <- 0 #gives everyone who is alive a status of 0
+ind_surv_dat <- left_join(ind_surv_dat,
+                          no_survivorsexpanded_July, 
+                          by = "OYS_ID") #Join this to the existing data
 
+##Do this for each month ##August##
+no_survivorsexpanded_August <- no_survivors %>% filter(Month_survivor == 'August_survivors') %>% 
+  uncount(No_survivors) #repeats each row by the number of times in May_survivors col
+no_survivorsexpanded_August <- no_survivorsexpanded_August %>% #Gives each individual in each bag a number (max of 50)
+  group_by(Site, Bag_Col, Bag_no) %>% 
+  mutate(OYS_ID = (row_number() - 1) %% 50 + 1)
+no_survivorsexpanded_August$OYS_ID <- paste0(no_survivorsexpanded_August$Site, no_survivorsexpanded_August$Bag_Col,
+                                          no_survivorsexpanded_August$Bag_no, "_", no_survivorsexpanded_August$OYS_ID)
+no_survivorsexpanded_August$August_status <- 0 #gives everyone who is alive a status of 0
+ind_surv_dat <- left_join(ind_surv_dat,
+                          no_survivorsexpanded_August, 
+                          by = "OYS_ID") #Join this to the existing data
 
-no_survivorsexpanded_noapril <- no_survivors %>% 
-  filter(Month_survivor != "April_survivors") %>% pivot_wider(names_from = Month_survivor, values_from = No_survivors)
-no_survivorsexpanded_noapril$BAG_ID <- paste0(no_survivorsexpanded_noapril$Site, no_survivorsexpanded_noapril$Bag_Col, no_survivorsexpanded_noapril$Bag_no, "_") #Give these individuals a bag code thats the same as for april
-#take the April DF and join it with filtered DF for each month that has been uncounted
-survival_status <- no_survivorsexpanded_April %>% full_join((select(no_survivorsexpanded_noapril, "May_survivors", "BAG_ID") %>% uncount(May_survivors)), by = "BAG_ID")
+##Do this for each month ##September##
+no_survivorsexpanded_September <- no_survivors %>% filter(Month_survivor == 'Sept_survivors') %>% 
+  uncount(No_survivors) #repeats each row by the number of times in May_survivors col
+no_survivorsexpanded_September <- no_survivorsexpanded_September %>% #Gives each individual in each bag a number (max of 50)
+  group_by(Site, Bag_Col, Bag_no) %>% 
+  mutate(OYS_ID = (row_number() - 1) %% 50 + 1)
+no_survivorsexpanded_September$OYS_ID <- paste0(no_survivorsexpanded_September$Site, no_survivorsexpanded_September$Bag_Col,
+                                          no_survivorsexpanded_September$Bag_no, "_", no_survivorsexpanded_September$OYS_ID)
+no_survivorsexpanded_September$September_status <- 0 #gives everyone who is alive a status of 0
+ind_surv_dat <- left_join(ind_surv_dat,
+                          no_survivorsexpanded_September, 
+                          by = "OYS_ID") #Join this to the existing data
 
-no_survivorsexpanded_noapril$status <- 0#Gives everyone alive a status 0
-no_survivorsexpanded_noapril1 <- no_survivorsexpanded_noapril %>% 
-   #Pivot this data wider so that I can do a join
-
+#Now just select the important columns                      
+ind_surv_dat <- ind_surv_dat %>% 
 ```
 
 

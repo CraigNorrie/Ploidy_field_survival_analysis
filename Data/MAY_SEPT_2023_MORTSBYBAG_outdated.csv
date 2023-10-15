@@ -1,0 +1,136 @@
+Site,Bag_Col,Month,Bag_no,Mort_count,Month_no
+Chelsea,Blue,Aug,27,10,8
+Chelsea,Blue,Aug,29,22,8
+Chelsea,Blue,Aug,37,10,8
+Chelsea,Blue,Aug,46,14,8
+Chelsea,Blue,Aug,48,7,8
+Chelsea,Blue,Aug,49,18,8
+Chelsea,Blue,Aug,65,18,8
+Chelsea,Blue,Aug,74,7,8
+Chelsea,Blue,July,29,2,7
+Chelsea,Blue,July,49,1,7
+Chelsea,Blue,June,49,1,6
+Chelsea,Blue,September,27,11,9
+Chelsea,Blue,September,37,9,9
+Chelsea,Blue,September,46,3,9
+Chelsea,Blue,September,48,23,9
+Chelsea,Blue,September,49,11,9
+Chelsea,Blue,September,74,2,9
+Chelsea,Green,Aug,12,3,8
+Chelsea,Green,Aug,59,2,8
+Chelsea,Green,Aug,70,2,8
+Chelsea,Green,Aug,71,9,8
+Chelsea,Green,Aug,72,1,8
+Chelsea,Green,Aug,85,4,8
+Chelsea,Green,Aug,86,9,8
+Chelsea,Green,Aug,91,11,8
+Chelsea,Green,July,12,2,7
+Chelsea,Green,July,70,3,7
+Chelsea,Green,July,71,3,7
+Chelsea,Green,July,86,1,7
+Chelsea,Green,July,91,2,7
+Chelsea,Green,June,71,2,6
+Chelsea,Green,June,85,1,6
+Chelsea,Green,September,12,1,9
+Chelsea,Green,September,59,21,9
+Chelsea,Green,September,70,2,9
+Chelsea,Green,September,71,6,9
+Chelsea,Green,September,72,10,9
+Chelsea,Green,September,86,9,9
+Chelsea,Green,September,91,4,9
+Chelsea,Red,Aug,22,10,8
+Chelsea,Red,Aug,26,9,8
+Chelsea,Red,Aug,30,4,8
+Chelsea,Red,Aug,35,7,8
+Chelsea,Red,Aug,39,10,8
+Chelsea,Red,Aug,48,9,8
+Chelsea,Red,Aug,50,7,8
+Chelsea,Red,July,22,1,7
+Chelsea,Red,July,26,2,7
+Chelsea,Red,July,39,4,7
+Chelsea,Red,June,39,1,6
+Chelsea,Red,September,17,5,9
+Chelsea,Red,September,22,11,9
+Chelsea,Red,September,26,4,9
+Chelsea,Red,September,30,17,9
+Chelsea,Red,September,39,3,9
+Chelsea,Red,September,48,11,9
+Chelsea,Red,September,50,3,9
+Hood Head,Blue,Aug,70,1,8
+Hood Head,Blue,September,34,2,9
+Hood Head,Blue,September,43,7,9
+Hood Head,Blue,September,53,1,9
+Hood Head,Green,September,13,3,9
+Hood Head,Green,September,75,1,9
+Hood Head,Green,September,98,1,9
+Hood Head,Red,Aug,28,1,8
+Hood Head,Red,Aug,33,1,8
+Hood Head,Red,September,2,4,9
+Hood Head,Red,September,23,3,9
+Hood Head,Red,September,38,1,9
+Hood Head,Red,September,44,19,9
+Manchester,Blue,Aug,54,1,8
+Manchester,Green,Aug,58,1,8
+Manchester,Green,Aug,92,1,8
+Manchester,Green,May,58,1,5
+Manchester,Green,September,79,1,9
+Manchester,Red,July,11,1,7
+Manchester,Red,May,40,1,5
+Manchester,Red,September,11,1,9
+Manchester,Red,September,40,1,9
+Thorndyke,Blue,July,36,1,7
+Thorndyke,Blue,July,67,1,7
+Thorndyke,Blue,June,36,1,6
+Thorndyke,Blue,June,52,1,6
+Thorndyke,Blue,September,36,1,9
+Thorndyke,Blue,September,69,1,9
+Thorndyke,Green,Aug,57,1,8
+Thorndyke,Green,Aug,67,1,8
+Thorndyke,Green,July,74,1,7
+Thorndyke,Green,May,57,1,5
+Thorndyke,Green,May,97,1,5
+Thorndyke,Red,Aug,45,1,8
+Thorndyke,Red,June,16,1,6
+Thorndyke,Red,June,37,1,6
+Thorndyke,Red,May,1001,0,5
+Thorndyke,Red,May,1002,0,5
+Thorndyke,Red,May,1003,0,5
+Thorndyke,Red,May,1004,0,5
+Thorndyke,Red,May,1005,0,5
+Thorndyke,Blue,May,2001,0,5
+Thorndyke,Blue,May,2002,0,5
+Thorndyke,Blue,May,2003,0,5
+Thorndyke,Blue,May,2004,0,5
+Thorndyke,Green,May,3001,0,5
+Thorndyke,Green,May,3002,0,5
+Thorndyke,Green,May,3003,0,5
+Thorndyke,Green,May,3004,0,5
+Manchester,Red,May,4001,0,5
+Manchester,Red,May,4002,0,5
+Manchester,Red,May,4003,0,5
+Manchester,Red,May,4004,0,5
+Manchester,Red,May,4005,0,5
+Manchester,Red,May,4006,0,5
+Manchester,Blue,May,5001,0,5
+Manchester,Blue,May,5002,0,5
+Manchester,Blue,May,5003,0,5
+Manchester,Blue,May,5004,0,5
+Manchester,Blue,May,5005,0,5
+Manchester,Blue,May,5006,0,5
+Manchester,Blue,May,5007,0,5
+Manchester,Green,May,6001,0,5
+Manchester,Green,May,6002,0,5
+Manchester,Green,May,6003,0,5
+Manchester,Green,May,6004,0,5
+Manchester,Green,May,6005,0,5
+Hood Head,Red,May,7001,0,5
+Hood Head,Red,May,7002,0,5
+Hood Head,Blue,May,8001,0,5
+Hood Head,Blue,May,8002,0,5
+Hood Head,Blue,May,8003,0,5
+Hood Head,Blue,May,8004,0,5
+Hood Head,Green,May,9001,0,5
+Hood Head,Green,May,9002,0,5
+Hood Head,Green,May,9003,0,5
+Hood Head,Green,May,9004,0,5
+Hood Head,Green,May,9005,0,5
