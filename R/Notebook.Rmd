@@ -243,7 +243,6 @@ These plots show that there appeared to be an effect of site on survival through
 
 Now I am going to create a cox proportional hazards model.
 
-**********Think about: Do I need to remove the continual 1" that indicate a dead oyster - Yes I do
 
 ```{r, echo=FALSE}
 coxph_pooled <-  coxph(Surv(month_no, event, type = "right") ~ Site.x * Bag_Col.x, data = survival_dat)
@@ -258,6 +257,11 @@ Significant differences existed between each of the sites and
 ### Include the random effects of cage
 
 Following Paul's example from the crab pH analyses I am going to use the frailtyEM package (@balan2019) to do a mixed effects analysis. I am including cage as a random effect because it acts as a grouping variable and we really don't care that much about the impacts of cage in our interpretation. 
+
+
+
+
+
 
 
 
