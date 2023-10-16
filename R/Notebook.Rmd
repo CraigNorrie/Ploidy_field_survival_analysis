@@ -19,6 +19,10 @@ Load the required packages. Using survival package that was updated in August 20
 library(tidyverse)
 library(here)
 library(survival)
+library(ggfortify)
+library(ggsurvfit)
+library(survminer)
+library(gridExtra)
 ```
 
 Read in the mortality data from the field experiments
@@ -26,6 +30,8 @@ Read in the mortality data from the field experiments
 ```{r, warning=FALSE, error=FALSE, message=FALSE}
 survdat <- read.csv(here("Data", "MAY_SEPT_2023_MORTSBYBAG.csv"))
 ```
+
+## Data Wrangling
 
 Correct the data structure
 
@@ -86,8 +92,6 @@ mean_survival_proportion %>% ggplot(aes(x=factor(Month_survivor, level=c("April_
   xlab("Month")+ylab("Mean number of survivors per bag (± SEM)")+
   theme_bw()+ggtitle("Number of survivors since experiment start")
 ```
-
-## Start survival analyses
 
 Need to turn the data into individual survival data. Each oyster should be listed with either alive or dead at each sampling point. Each oyster will need an ID number. 8 Cages per ploidy per site were monitored for mortality so a total of 400 oysters per ploidy per site at the start. Total of 4800 oysters. 
 
@@ -176,9 +180,6 @@ ind_surv_dat <- ind_surv_dat %>% select(Site.x, Bag_Col.x, Bag_no.x, OYS_ID,
                                         July_status,
                                         August_status,
                                         September_status)
-ind_surv_dat <- ind_surv_dat %>%
-  mutate_all(~ ifelse(is.na(.), 1, .))#replace NA with 1 to indicate that they are dead
-
 ind_surv_dat
 ```
 
@@ -192,13 +193,57 @@ survival_dat <- ind_surv_dat %>% pivot_longer(cols=c(April_status, May_status, J
 survival_dat <- survival_dat %>%  mutate(Month = str_replace(Month, "_status", ""))#remove the status from the data holes (cells)
 survival_dat$month_no <- match(survival_dat$Month, month.name)#Add a number for each month
 
+#replace the NAs in the event column with 1
+survival_dat <- survival_dat %>%
+  mutate(event = ifelse(is.na(event), 1, event))
 ```
 
-Now I can finally actually look at survival
+## Survival analyses
+
+### Survial plots for pooled data (no random effects of bag number)
+
+Created Kaplan-Meyer survival plots for all data pooled across sites and ploidys. They do not consider the potential random effects of Bag within sites. 
+
+Create a survival plot faceted by Site
+
+```{r, echo = FALSE}
+pooled_site_survplot <- survival_dat %>% 
+ ggsurvplot_facet(survfit(Surv(month_no, event, type = "right") ~ Bag_Col.x , data = .),
+            facet.by = "Site.x",
+            data = .,
+            risk.table = FALSE, pval = FALSE, conf.int = TRUE, 
+            xlim = c(5, 10), ylim = c(0.5, 1))
+pooled_site_survplot
+
+
+```
+
+Create a survival plot faceted by ploidy
 
 ```{r}
-
+pooled_ploidy_survplot <- survival_dat %>% 
+ ggsurvplot_facet(survfit(Surv(month_no, event, type = "right") ~ Site.x , data = .),
+            facet.by = "Bag_Col.x",
+            data = .,
+            risk.table = FALSE, pval = FALSE, conf.int = TRUE, 
+            xlim = c(5, 10), ylim = c(0.5, 1))
+pooled_ploidy_survplot
 ```
+
+These plots show that there appeared to be an effect of site on survival throughout summer of 2023
+
+Now I am going to create a cox proportional hazards model.
+
+**********Think about: Do I need to remove the continual ones that indicate a dead oyster
+
+```{r, echo=FALSE}
+coxph_pooled <-  coxph(Surv(month_no, event, type = "right") ~ Site.x * Bag_Col.x, data = survival_dat)
+coxph_pooled
+```
+
+
+
+
 
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
