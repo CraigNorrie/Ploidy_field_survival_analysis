@@ -23,6 +23,7 @@ library(ggfortify)
 library(ggsurvfit)
 library(survminer)
 library(gridExtra)
+library(frailtyEM)
 ```
 
 Read in the mortality data from the field experiments
@@ -194,8 +195,15 @@ survival_dat <- survival_dat %>%  mutate(Month = str_replace(Month, "_status", "
 survival_dat$month_no <- match(survival_dat$Month, month.name)#Add a number for each month
 
 #replace the NAs in the event column with 1
-survival_dat <- survival_dat %>%
+survival_dat <- survival_dat %>% 
   mutate(event = ifelse(is.na(event), 1, event))
+
+#I only want to keep the first instance of a 1 for each individual.
+survival_dat <- survival_dat %>%
+  group_by(OYS_ID) %>%
+  mutate(event = replace(event, cumsum(event == 1) > 1, NA)) %>% 
+  mutate(event = ifelse(event == 0 | cumsum(event == 1) == 1, event, 0))
+
 ```
 
 ## Survival analyses
@@ -212,7 +220,7 @@ pooled_site_survplot <- survival_dat %>%
             facet.by = "Site.x",
             data = .,
             risk.table = FALSE, pval = FALSE, conf.int = TRUE, 
-            xlim = c(5, 10), ylim = c(0.5, 1))
+            xlim = c(5, 10), ylim = c(0.6, 1))
 pooled_site_survplot
 
 
@@ -225,8 +233,9 @@ pooled_ploidy_survplot <- survival_dat %>%
  ggsurvplot_facet(survfit(Surv(month_no, event, type = "right") ~ Site.x , data = .),
             facet.by = "Bag_Col.x",
             data = .,
-            risk.table = FALSE, pval = FALSE, conf.int = TRUE, 
-            xlim = c(5, 10), ylim = c(0.5, 1))
+            risk.table = FALSE, pval = FALSE, conf.int = TRUE,
+            xlab = ("Month"),
+            xlim = c(5, 10), ylim = c(0.6, 1))
 pooled_ploidy_survplot
 ```
 
@@ -234,15 +243,21 @@ These plots show that there appeared to be an effect of site on survival through
 
 Now I am going to create a cox proportional hazards model.
 
-**********Think about: Do I need to remove the continual ones that indicate a dead oyster
+**********Think about: Do I need to remove the continual 1" that indicate a dead oyster - Yes I do
 
 ```{r, echo=FALSE}
 coxph_pooled <-  coxph(Surv(month_no, event, type = "right") ~ Site.x * Bag_Col.x, data = survival_dat)
 coxph_pooled
+
 ```
 
+There was a significant ploidy*site interaction in this analysis.
+Significant differences existed between each of the sites and 
 
 
+### Include the random effects of cage
+
+Following Paul's example from the crab pH analyses I am going to use the frailtyEM package (@balan2019) to do a mixed effects analysis. I am including cage as a random effect because it acts as a grouping variable and we really don't care that much about the impacts of cage in our interpretation. 
 
 
 
