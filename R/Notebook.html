@@ -1717,8 +1717,6 @@ pooled_ploidy_survplot</code></pre>
 <p>These plots show that there appeared to be an effect of site on
 survival throughout summer of 2023</p>
 <p>Now I am going to create a cox proportional hazards model.</p>
-<p>**********Think about: Do I need to remove the continual 1” that
-indicate a dead oyster - Yes I do</p>
 <pre><code>## Call:
 ## coxph(formula = Surv(month_no, event, type = &quot;right&quot;) ~ Site.x * 
 ##     Bag_Col.x, data = survival_dat)
