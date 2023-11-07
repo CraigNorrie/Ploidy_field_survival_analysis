@@ -237,13 +237,15 @@ pooled_site_survplot <- survival_dat %>%
             data = .,
             risk.table = FALSE, pval = FALSE, conf.int = TRUE, 
             xlim = c(5, 10), ylim = c(0.6, 1),
-            legend.labs = c("Diploids", "Induced Triploids", "Mated Triploids"),
+            legend.labs = c("Diploid", "Induced Triploid", "Mated Triploid"),
             xlab = "Month",
             legend.strata = FALSE, 
             legend.title = "Ploidy")+
   scale_x_continuous(breaks = seq(5, 10, by = 1))+
   theme_bw(base_size = 15)+
-  labs(legend = "ploidy")
+  labs(legend = "ploidy")+
+  scale_color_manual(values = c("blue", "green", "red"))+
+  scale_fill_manual(values = c("blue", "green", "red"))
 pooled_site_survplot
 
 ```
