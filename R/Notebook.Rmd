@@ -11,6 +11,8 @@ editor_options:
 
 Survival analysis to the end of 2023 for oyster ploidy project
 
+
+
 ## Read in the data and create basic tables and graphs
 
 Load the required packages. Using survival package that was updated in August 2023
@@ -24,12 +26,13 @@ library(ggsurvfit)
 library(survminer)
 library(gridExtra)
 library(frailtyEM)
+library(coxme)
 ```
 
 Read in the mortality data from the field experiments
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE}
-survdat <- read.csv(here("Data", "MAY_OCT_2023_MORTSBYBAG.csv"))
+survdat <- read.csv(here("Data", "MAY_2023_JULY_2024_MORTSBYBAG.csv"))
 ```
 
 ## Data Wrangling
@@ -37,26 +40,33 @@ survdat <- read.csv(here("Data", "MAY_OCT_2023_MORTSBYBAG.csv"))
 Correct the data structure
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE}
-survdat <- survdat %>% mutate_at(c("Site", "Bag_Col", "Month", "Bag_no", "Month_no"), as.factor)
+survdat <- survdat %>% mutate_at(c("Site", "Bag_Col", "Month", "Bag_no", "Month_no", "Year", "Month_year"), as.factor)
 str(survdat)
 ```
 
 Create a new data sheet that calculates the number of survivors at each sampling event (as opposed to the number of moralities)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE}
-widebagmort <- pivot_wider(survdat[-c(6)], names_from = Month, values_from = Mort_count) #C6 is removed because this is numerical month
+widebagmort <- pivot_wider(survdat[-c(6, 3, 7, 9)], names_from = Month_year, values_from = Mort_count)#C6 is removed because this is numerical month
 #replace NA in the mortality columns with 0
 widebagmort <- widebagmort %>%
-  mutate_at(vars(May, June, July, August, September, October), ~replace_na(., 0))
-widebagmort$April_survivors <- 50
-widebagmort$May_survivors <- widebagmort$April_survivors-widebagmort$May
-widebagmort$June_survivors <- widebagmort$May_survivors-widebagmort$June
-widebagmort$July_survivors <- widebagmort$June_survivors-widebagmort$July
-widebagmort$August_survivors <- widebagmort$July_survivors-widebagmort$August
-widebagmort$Sept_survivors <- widebagmort$August_survivors-widebagmort$September
-widebagmort$Oct_survivors <- widebagmort$Sept_survivors-widebagmort$October
+  mutate_at(vars(May_2023, June_2023, July_2023, August_2023, September_2023, October_2023, May_2024, June_2024, July_2024), ~replace_na(., 0))
+widebagmort <- widebagmort %>% 
+  group_by(Site, Bag_Col, Bag_no, )
+summarise(widebagmort)
+widebagmort$April_2023_survivors <- 50
+widebagmort$May_2023_survivors <- widebagmort$April_2023_survivors-widebagmort$May_2023
+widebagmort$June_2023_survivors <- widebagmort$May_2023_survivors-widebagmort$June_2023
+widebagmort$July_2023_survivors <- widebagmort$June_2023_survivors-widebagmort$July_2023
+widebagmort$August_2023_survivors <- widebagmort$July_2023_survivors-widebagmort$August_2023
+widebagmort$September_2023_survivors <- widebagmort$August_2023_survivors-widebagmort$September_2023
+widebagmort$October_2023_survivors <- widebagmort$September_2023_survivors-widebagmort$October_2023
+widebagmort$May_2024_survivors <- widebagmort$October_2023_survivors-widebagmort$May_2024
+widebagmort$June_2024_survivors <- widebagmort$May_2024_survivors-widebagmort$June_2024
+widebagmort$July_2024_survivors <- widebagmort$June_2024_survivors-widebagmort$July_2024
 
-no_survivors <- widebagmort %>% pivot_longer(cols=c(10:16),#######################As months are added make sure their columns are selected - change to an auto thing*************
+#Pivit back to longer
+no_survivors <- widebagmort %>% pivot_longer(cols=c(13:22),#######################As months are added make sure their columns are selected - change to an auto thing*************
                                                          names_to='Month_survivor',
                                                          values_to='No_survivors') %>% 
   select("Site", "Bag_Col", "Bag_no",'Month_survivor','No_survivors')
@@ -68,13 +78,21 @@ Double check that all bags are accounted for. There should be 8 bags per colour 
 
 ```{r, echo=FALSE}
 no_survivors %>% group_by(Site, Bag_Col) %>% summarise(nbags=n())
+#add the date column on here
+
+no_survivors <- no_survivors %>%
+  mutate(Month_survivor = as.character(Month_survivor),
+         Month = sub("_.*", "", Month_survivor),  # Extract month
+         Year = sub(".*_(\\d+)_survivors", "\\1", Month_survivor),  # Extract year
+         Month_no = match(Month, month.name),  # Convert month name to month number
+         Date = ymd(paste0(Year, "-", sprintf("%02d", Month_no), "-01")))  # Create date
 ```
 
-Sumarise the number of survivors per site per sampling event
+Summarise the number of survivors per site per sampling event
 
 ```{r, echo=FALSE}
 mean_survival_proportion <- no_survivors %>% 
-  group_by(Site, Bag_Col, Month_survivor) %>% 
+  group_by(Site, Bag_Col, Date) %>% 
   summarise(meansurv=mean(No_survivors), semsurv=sd(No_survivors)/sqrt(n()))
 
 mean_survival_proportion
@@ -83,16 +101,12 @@ mean_survival_proportion
 Create a basic survival plot taht shows the number of survivors at each sampling event
 
 ```{r, echo=FALSE}
-
-
-mean_survival_proportion %>% ggplot(aes(x=factor(Month_survivor, level=c("April_survivors", 'May_survivors', 'June_survivors', 'July_survivors', 'August_survivors', 'Sept_survivors', 'Oct_survivors')), ###add new months here**********
-             y=meansurv, colour = Bag_Col, group=Bag_Col))+
-  scale_x_discrete(labels=c('April', 'May', 'June', 'July', 'August', 'September', 'October'))+####################Add new months here ***********************
-  scale_color_manual(values=c('blue', 'green', 'red'), name = "Ploidy", labels = c("Diploid", "Induced Triploid", "Mated Triploid"))+
+mean_survival_proportion %>% ggplot(aes(x=Date, y=meansurv, colour = Bag_Col, group=Bag_Col))+geom_line()+
   geom_errorbar(aes(ymin=meansurv-semsurv, ymax=meansurv+semsurv))+
   geom_line()+facet_grid(~Site)+
-  xlab("Month")+ylab("Mean number of survivors per bag (± SEM)")+
-  theme_bw()+ggtitle("Number of survivors since experiment start")
+  xlab("Month")+ylab("Proportional Survival")+
+  theme_bw()+ggtitle("Number of survivors since experiment start")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
 Need to turn the data into individual survival data. Each oyster should be listed with either alive or dead at each sampling point. Each oyster will need an ID number. 8 Cages per ploidy per site were monitored for mortality so a total of 400 oysters per ploidy per site at the start. Total of 4800 oysters. 
@@ -102,7 +116,7 @@ This is a very clunky way to do this and needs to be streamlined - a for loop mi
 ```{r, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
 #the uncount function will work here
 #Count just the April individuals to get ID numbers for each individual at the start
-no_survivorsexpanded_April <- no_survivors %>% filter(Month_survivor == 'April_survivors') %>% 
+no_survivorsexpanded_April <- no_survivors %>% filter(Month_survivor == 'April_2023_survivors') %>% 
   uncount(No_survivors) #repeats each row by the number of times in April_survivors col
 #Give each individual an ID number from 1-50
 no_survivorsexpanded_April$OYS_ID <- rep(1:50, times = nrow(no_survivorsexpanded_April)/50) #Gives each a number
@@ -110,7 +124,7 @@ no_survivorsexpanded_April$OYS_ID <- paste0(no_survivorsexpanded_April$Site, no_
                                             no_survivorsexpanded_April$Bag_no, "_", no_survivorsexpanded_April$OYS_ID)
 no_survivorsexpanded_April$April_status <- 0 #gives everyone who is alive a status of 0
 ##Do this for each month ##MAY##
-no_survivorsexpanded_May <- no_survivors %>% filter(Month_survivor == 'May_survivors') %>% 
+no_survivorsexpanded_May <- no_survivors %>% filter(Month_survivor == 'May_2023_survivors') %>% 
   uncount(No_survivors) #repeats each row by the number of times in May_survivors col
 no_survivorsexpanded_May <- no_survivorsexpanded_May %>% #Gives each individual in each bag a number (max of 50)
   group_by(Site, Bag_Col, Bag_no) %>% 
@@ -123,7 +137,7 @@ ind_surv_dat <- left_join(select(no_survivorsexpanded_April, Site, Bag_Col, Bag_
                           by = "OYS_ID")#Join this to the april data
 
 ##Do this for each month ##June##
-no_survivorsexpanded_June <- no_survivors %>% filter(Month_survivor == 'June_survivors') %>% 
+no_survivorsexpanded_June <- no_survivors %>% filter(Month_survivor == 'June_2023_survivors') %>% 
   uncount(No_survivors) #repeats each row by the number of times in May_survivors col
 no_survivorsexpanded_June <- no_survivorsexpanded_June %>% #Gives each individual in each bag a number (max of 50)
   group_by(Site, Bag_Col, Bag_no) %>% 
@@ -136,7 +150,7 @@ ind_surv_dat <- left_join(ind_surv_dat,
                           by = "OYS_ID") #Join this to the existing data
 
 ##Do this for each month ##July##
-no_survivorsexpanded_July <- no_survivors %>% filter(Month_survivor == 'July_survivors') %>% 
+no_survivorsexpanded_July <- no_survivors %>% filter(Month_survivor == 'July_2023_survivors') %>% 
   uncount(No_survivors) #repeats each row by the number of times in May_survivors col
 no_survivorsexpanded_July <- no_survivorsexpanded_July %>% #Gives each individual in each bag a number (max of 50)
   group_by(Site, Bag_Col, Bag_no) %>% 
@@ -149,7 +163,7 @@ ind_surv_dat <- left_join(ind_surv_dat,
                           by = "OYS_ID") #Join this to the existing data
 
 ##Do this for each month ##August##
-no_survivorsexpanded_August <- no_survivors %>% filter(Month_survivor == 'August_survivors') %>% 
+no_survivorsexpanded_August <- no_survivors %>% filter(Month_survivor == 'August_2023_survivors') %>% 
   uncount(No_survivors) #repeats each row by the number of times in May_survivors col
 no_survivorsexpanded_August <- no_survivorsexpanded_August %>% #Gives each individual in each bag a number (max of 50)
   group_by(Site, Bag_Col, Bag_no) %>% 
@@ -162,7 +176,7 @@ ind_surv_dat <- left_join(ind_surv_dat,
                           by = "OYS_ID") #Join this to the existing data
 
 ##Do this for each month ##September##
-no_survivorsexpanded_September <- no_survivors %>% filter(Month_survivor == 'Sept_survivors') %>% 
+no_survivorsexpanded_September <- no_survivors %>% filter(Month_survivor == 'September_2023_survivors') %>% 
   uncount(No_survivors) #repeats each row by the number of times in May_survivors col
 no_survivorsexpanded_September <- no_survivorsexpanded_September %>% #Gives each individual in each bag a number (max of 50)
   group_by(Site, Bag_Col, Bag_no) %>% 
@@ -175,7 +189,7 @@ ind_surv_dat <- left_join(ind_surv_dat,
                           by = "OYS_ID") #Join this to the existing data
 
 ##Do this for each month ##October##
-no_survivorsexpanded_October <- no_survivors %>% filter(Month_survivor == 'Oct_survivors') %>% 
+no_survivorsexpanded_October <- no_survivors %>% filter(Month_survivor == 'October_2023_survivors') %>% 
   uncount(No_survivors) #repeats each row by the number of times in May_survivors col
 no_survivorsexpanded_October <- no_survivorsexpanded_October %>% #Gives each individual in each bag a number (max of 50)
   group_by(Site, Bag_Col, Bag_no) %>% 
@@ -187,6 +201,44 @@ ind_surv_dat <- left_join(ind_surv_dat,
                           no_survivorsexpanded_October, 
                           by = "OYS_ID") #Join this to the existing data
 
+##Do this for each month ##May 2024##
+no_survivorsexpanded_May_24 <- no_survivors %>% filter(Month_survivor == 'May_2024_survivors') %>% 
+  uncount(No_survivors) #repeats each row by the number of times in May_survivors col
+no_survivorsexpanded_May_24 <- no_survivorsexpanded_May_24 %>% #Gives each individual in each bag a number (max of 50)
+  group_by(Site, Bag_Col, Bag_no) %>% 
+  mutate(OYS_ID = (row_number() - 1) %% 50 + 1)
+no_survivorsexpanded_May_24$OYS_ID <- paste0(no_survivorsexpanded_May_24$Site, no_survivorsexpanded_May_24$Bag_Col,
+                                          no_survivorsexpanded_May_24$Bag_no, "_", no_survivorsexpanded_May_24$OYS_ID)
+no_survivorsexpanded_May_24$May_24_status <- 0 #gives everyone who is alive a status of 0
+ind_surv_dat <- left_join(ind_surv_dat,
+                          no_survivorsexpanded_May_24, 
+                          by = "OYS_ID") #Join this to the existing data
+##Do this for each month ##June 2024##
+no_survivorsexpanded_June_24 <- no_survivors %>% filter(Month_survivor == 'June_2024_survivors') %>% 
+  uncount(No_survivors) #repeats each row by the number of times in June_survivors col
+no_survivorsexpanded_June_24 <- no_survivorsexpanded_June_24 %>% #Gives each individual in each bag a number (max of 50)
+  group_by(Site, Bag_Col, Bag_no) %>% 
+  mutate(OYS_ID = (row_number() - 1) %% 50 + 1)
+no_survivorsexpanded_June_24$OYS_ID <- paste0(no_survivorsexpanded_June_24$Site, no_survivorsexpanded_June_24$Bag_Col,
+                                          no_survivorsexpanded_June_24$Bag_no, "_", no_survivorsexpanded_June_24$OYS_ID)
+no_survivorsexpanded_June_24$June_24_status <- 0 #gives everyone who is alive a status of 0
+ind_surv_dat <- left_join(ind_surv_dat,
+                          no_survivorsexpanded_June_24, 
+                          by = "OYS_ID") #Join this to the existing data
+##Do this for each month ##JULY 2024##
+no_survivorsexpanded_July_24 <- no_survivors %>% filter(Month_survivor == 'July_2024_survivors') %>% 
+  uncount(No_survivors) #repeats each row by the number of times in July_survivors col
+no_survivorsexpanded_July_24 <- no_survivorsexpanded_July_24 %>% #Gives each individual in each bag a number (max of 50)
+  group_by(Site, Bag_Col, Bag_no) %>% 
+  mutate(OYS_ID = (row_number() - 1) %% 50 + 1)
+no_survivorsexpanded_July_24$OYS_ID <- paste0(no_survivorsexpanded_July_24$Site, no_survivorsexpanded_July_24$Bag_Col,
+                                          no_survivorsexpanded_July_24$Bag_no, "_", no_survivorsexpanded_July_24$OYS_ID)
+no_survivorsexpanded_July_24$July_24_status <- 0 #gives everyone who is alive a status of 0
+ind_surv_dat <- left_join(ind_surv_dat,
+                          no_survivorsexpanded_July_24, 
+                          by = "OYS_ID") #Join this to the existing data
+
+
 
 #Now just select the important columns                      
 ind_surv_dat <- ind_surv_dat %>% select(Site.x, Bag_Col.x, Bag_no.x, OYS_ID,
@@ -196,19 +248,36 @@ ind_surv_dat <- ind_surv_dat %>% select(Site.x, Bag_Col.x, Bag_no.x, OYS_ID,
                                         July_status,
                                         August_status,
                                         September_status,
-                                        October_status)
+                                        October_status,
+                                        May_24_status,
+                                        June_24_status,
+                                        July_24_status)
 ind_surv_dat
 ```
 
 Pivot this data longer to get the correct formayt for survival analyses
 
 ```{r, echo=FALSE}
-survival_dat <- ind_surv_dat %>% pivot_longer(cols=c(April_status, May_status, June_status,
-                                              July_status, August_status, September_status, October_status),
+#Rename 2023 columns by month_year
+ind_surv_dat <- ind_surv_dat %>% rename(
+  April_23_status = April_status,
+  May_23_status = May_status,
+  June_23_status = June_status,
+  July_23_status = July_status,
+  August_23_status = August_status,
+  September_23_status = September_status,
+  October_23_status = October_status
+)
+
+survival_dat <- ind_surv_dat %>% pivot_longer(cols=c(April_23_status, May_23_status, June_23_status,
+                                              July_23_status, August_23_status, September_23_status, October_23_status, May_24_status, June_24_status, July_24_status),
                                               names_to = "Month",
                                               values_to = "event")
 survival_dat <- survival_dat %>%  mutate(Month = str_replace(Month, "_status", ""))#remove the status from the data holes (cells)
-survival_dat$month_no <- match(survival_dat$Month, month.name)#Add a number for each month
+#Add a numeric month number
+survival_dat$Date <- parse_date_time(survival_dat$Month, orders = "my", tz = "UTC")
+start_date <- ymd("2023-04-01")# Define the starting month
+survival_dat$month_no <- interval(start_date, survival_dat$Date) %/% months(1) + 4
 
 #replace the NAs in the event column with 1
 survival_dat <- survival_dat %>% 
@@ -236,12 +305,12 @@ pooled_site_survplot <- survival_dat %>%
             facet.by = "Site.x",
             data = .,
             risk.table = FALSE, pval = FALSE, conf.int = TRUE, 
-            xlim = c(5, 10), ylim = c(0.6, 1),
+            xlim = c(4, 19), ylim = c(0.65, 1),
             legend.labs = c("Diploid", "Induced Triploid", "Mated Triploid"),
             xlab = "Month",
             legend.strata = FALSE, 
             legend.title = "Ploidy")+
-  scale_x_continuous(breaks = seq(5, 10, by = 1))+
+  scale_x_continuous(breaks = seq(4, 19, by = 1))+
   theme_bw(base_size = 15)+
   labs(legend = "ploidy")+
   scale_color_manual(values = c("blue", "green", "red"))+
@@ -259,7 +328,7 @@ pooled_ploidy_survplot <- survival_dat %>%
             data = .,
             risk.table = FALSE, pval = FALSE, conf.int = TRUE,
             xlab = ("Month"),
-            xlim = c(5, 10), ylim = c(0.6, 1))
+            xlim = c(4, 19), ylim = c(0.6, 1))
 pooled_ploidy_survplot
 ```
 
@@ -269,10 +338,36 @@ Now I am going to create a cox proportional hazards model.
 
 
 ```{r, echo=FALSE}
-coxph_pooled <-  coxph(Surv(month_no, event, type = "right") ~ Site.x * Bag_Col.x, data = survival_dat)
-coxph_pooled
+surv_field <- with(survival_dat, Surv(month_no, event, type = "right"))#For some reason piping does not work here
+
+coxph_pooled <-  coxph(surv_field ~ Site.x * Bag_Col.x, data = survival_dat)
+anova(coxph_pooled)
 
 ```
+
+###Coxme package to examine differences
+Using the coxme oackage allows us to introcuce a random effect of cage. This may not be essential, but at least we can check
+
+```{r}
+coxph_randomeff <- coxme(surv_field ~ Site.x*Bag_Col.x + (1|Bag_no.x), data = survival_dat)
+```
+We comapeed the two models (one with random effect of bag an one without)
+
+```{r}
+anova(coxph_pooled, coxph_randomeff)
+```
+
+The model with the random effect of bag is better than the one without this random effect, so we will use the model with teh random effect.
+
+```{r}
+pairwise_coxph_randomeff <- emmeans(coxph_randomeff, ~ Site.x*Bag_Col.x)
+pairs_ploidy <- pairs(pairwise_coxph_randomeff, simple = "Site.x", adjust = "Tukey")
+pairs_CO2 <- pairs(pairwise_coxph_randomeff, simple = "ag_Col.x", adjust = "Tukey")
+```
+
+
+
+
 
 There was a significant ploidy*site interaction in this analysis.
 Significant differences existed between each of the sites and 

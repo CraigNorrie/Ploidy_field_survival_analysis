@@ -1,0 +1,117 @@
+,Site,Bag_Col,Bag_no,Month.x,Mort_count.x,Month_no,Month.y,Mort_count.y,Year,Month_year
+1,Chelsea,Blue,27,May,0,5,NA,0,NA,NA
+2,Chelsea,Blue,29,May,0,5,NA,0,NA,NA
+3,Chelsea,Blue,37,May,0,5,May,1,2024,May_2024
+4,Chelsea,Blue,46,May,0,5,NA,0,NA,NA
+5,Chelsea,Blue,48,May,0,5,May,1,2024,May_2024
+6,Chelsea,Blue,49,May,0,5,NA,0,NA,NA
+7,Chelsea,Blue,65,May,0,5,NA,0,NA,NA
+8,Chelsea,Blue,74,May,0,5,NA,0,NA,NA
+9,Chelsea,Blue,55,NA,NA,NA,May,28,2024,May_2024
+10,Chelsea,Green,12,May,0,5,May,5,2024,May_2024
+11,Chelsea,Green,59,May,0,5,NA,0,NA,NA
+12,Chelsea,Green,70,May,0,5,May,9,2024,May_2024
+13,Chelsea,Green,71,May,0,5,May,2,2024,May_2024
+14,Chelsea,Green,72,May,0,5,May,4,2024,May_2024
+15,Chelsea,Green,74,NA,NA,NA,May,5,2024,May_2024
+16,Chelsea,Green,85,May,0,5,May,1,2024,May_2024
+17,Chelsea,Green,86,May,0,5,NA,0,NA,NA
+18,Chelsea,Green,91,May,0,5,NA,0,NA,NA
+19,Chelsea,Red,17,May,0,5,May,4,2024,May_2024
+20,Chelsea,Red,22,May,0,5,May,3,2024,May_2024
+21,Chelsea,Red,26,May,0,5,NA,0,NA,NA
+22,Chelsea,Red,30,May,0,5,NA,0,NA,NA
+23,Chelsea,Red,35,May,0,5,May,1,2024,May_2024
+24,Chelsea,Red,39,May,0,5,May,3,2024,May_2024
+25,Chelsea,Red,48,May,0,5,May,6,2024,May_2024
+26,Chelsea,Red,50,May,0,5,NA,0,NA,NA
+27,Hood Head,Blue,13,NA,NA,NA,May,1,2024,May_2024
+28,Hood Head,Blue,31,May,0,5,NA,0,NA,NA
+29,Hood Head,Blue,34,May,0,5,May,1,2024,May_2024
+30,Hood Head,Blue,43,May,0,5,NA,0,NA,NA
+31,Hood Head,Blue,44,May,0,5,May,1,2024,May_2024
+32,Hood Head,Blue,54,May,0,5,NA,0,NA,NA
+33,Hood Head,Blue,61,May,0,5,NA,0,NA,NA
+34,Hood Head,Blue,70,May,0,5,NA,0,NA,NA
+35,Hood Head,Blue,73,May,0,5,May,1,2024,May_2024
+36,Hood Head,Green,13,May,0,5,NA,0,NA,NA
+37,Hood Head,Green,14,May,0,5,NA,0,NA,NA
+38,Hood Head,Green,73,May,0,5,May,3,2024,May_2024
+39,Hood Head,Green,75,May,0,5,NA,0,NA,NA
+40,Hood Head,Green,77,May,0,5,May,4,2024,May_2024
+41,Hood Head,Green,88,May,0,5,NA,0,NA,NA
+42,Hood Head,Green,93,May,0,5,NA,0,NA,NA
+43,Hood Head,Green,98,May,0,5,NA,0,NA,NA
+44,Hood Head,Red,2,May,0,5,NA,0,NA,NA
+45,Hood Head,Red,20,May,0,5,NA,0,NA,NA
+46,Hood Head,Red,23,May,0,5,May,1,2024,May_2024
+47,Hood Head,Red,24,May,0,5,NA,0,NA,NA
+48,Hood Head,Red,27,May,0,5,NA,0,NA,NA
+49,Hood Head,Red,28,May,0,5,NA,0,NA,NA
+50,Hood Head,Red,33,May,0,5,NA,0,NA,NA
+51,Hood Head,Red,36,May,0,5,NA,0,NA,NA
+52,Manchester,Blue,28,May,0,5,May,1,2024,May_2024
+53,Manchester,Blue,47,May,0,5,May,1,2024,May_2024
+54,Manchester,Blue,54,May,0,5,NA,0,NA,NA
+55,Manchester,Blue,58,May,0,5,May,1,2024,May_2024
+56,Manchester,Blue,63,May,0,5,NA,0,NA,NA
+57,Manchester,Blue,68,May,0,5,May,1,2024,May_2024
+58,Manchester,Blue,75,May,0,5,May,7,2024,May_2024
+59,Manchester,Blue,88,May,0,5,NA,0,NA,NA
+60,Manchester,Green,11,May,0,5,NA,0,NA,NA
+61,Manchester,Green,58,May,1,5,NA,0,NA,NA
+62,Manchester,Green,60,May,0,5,May,4,2024,May_2024
+63,Manchester,Green,79,May,0,5,May,2,2024,May_2024
+64,Manchester,Green,80,May,0,5,May,1,2024,May_2024
+65,Manchester,Green,84,May,0,5,NA,0,NA,NA
+66,Manchester,Green,89,May,0,5,NA,0,NA,NA
+67,Manchester,Green,100,May,0,5,May,1,2024,May_2024
+68,Manchester,Red,3,May,0,5,NA,0,NA,NA
+69,Manchester,Red,8,May,0,5,NA,0,NA,NA
+70,Manchester,Red,10,May,0,5,May,1,2024,May_2024
+71,Manchester,Red,11,May,0,5,May,1,2024,May_2024
+72,Manchester,Red,13,NA,NA,NA,May,1,2024,May_2024
+73,Manchester,Red,29,May,0,5,May,1,2024,May_2024
+74,Manchester,Red,34,May,0,5,NA,0,NA,NA
+75,Manchester,Red,40,May,1,5,NA,0,NA,NA
+76,Manchester,Red,46,May,0,5,NA,0,NA,NA
+77,Thorndyke Bay,Blue,35,May,0,5,NA,0,NA,NA
+78,Thorndyke Bay,Blue,36,May,0,5,NA,0,NA,NA
+79,Thorndyke Bay,Blue,41,May,0,5,NA,0,NA,NA
+80,Thorndyke Bay,Blue,52,May,0,5,NA,0,NA,NA
+81,Thorndyke Bay,Blue,59,May,0,5,NA,0,NA,NA
+82,Thorndyke Bay,Blue,64,May,0,5,NA,0,NA,NA
+83,Thorndyke Bay,Blue,67,May,0,5,NA,0,NA,NA
+84,Thorndyke Bay,Blue,72,May,0,5,NA,0,NA,NA
+85,Thorndyke Bay,Green,57,May,1,5,NA,0,NA,NA
+86,Thorndyke Bay,Green,67,May,0,5,NA,0,NA,NA
+87,Thorndyke Bay,Green,69,May,0,5,NA,0,NA,NA
+88,Thorndyke Bay,Green,74,May,0,5,NA,0,NA,NA
+89,Thorndyke Bay,Green,81,May,0,5,NA,0,NA,NA
+90,Thorndyke Bay,Green,83,May,0,5,NA,0,NA,NA
+91,Thorndyke Bay,Green,97,May,1,5,NA,0,NA,NA
+92,Thorndyke Bay,Green,99,May,0,5,NA,0,NA,NA
+93,Thorndyke Bay,Red,9,May,0,5,NA,0,NA,NA
+94,Thorndyke Bay,Red,15,May,0,5,NA,0,NA,NA
+95,Thorndyke Bay,Red,16,May,0,5,NA,0,NA,NA
+96,Thorndyke Bay,Red,18,May,0,5,NA,0,NA,NA
+97,Thorndyke Bay,Red,19,May,0,5,NA,0,NA,NA
+98,Thorndyke Bay,Red,37,May,0,5,NA,0,NA,NA
+99,Thorndyke Bay,Red,45,May,0,5,NA,0,NA,NA
+100,Thorndyke Bay,Red,49,May,0,5,NA,0,NA,NA
+101,Thorndyke,Blue,36,NA,NA,NA,May,6,2024,May_2024
+102,Thorndyke,Blue,41,NA,NA,NA,May,1,2024,May_2024
+103,Thorndyke,Blue,52,NA,NA,NA,May,5,2024,May_2024
+104,Thorndyke,Blue,64,NA,NA,NA,May,2,2024,May_2024
+105,Thorndyke,Blue,67,NA,NA,NA,May,1,2024,May_2024
+106,Thorndyke,Blue,69,NA,NA,NA,May,2,2024,May_2024
+107,Thorndyke,Blue,72,NA,NA,NA,May,2,2024,May_2024
+108,Thorndyke,Blue,32,NA,NA,NA,May,4,2024,May_2024
+109,Thorndyke,Green,57,NA,NA,NA,May,2,2024,May_2024
+110,Thorndyke,Red,9,NA,NA,NA,May,1,2024,May_2024
+111,Thorndyke,Red,16,NA,NA,NA,May,3,2024,May_2024
+112,Thorndyke,Red,18,NA,NA,NA,May,2,2024,May_2024
+113,Thorndyke,Red,19,NA,NA,NA,May,2,2024,May_2024
+114,Thorndyke,Red,37,NA,NA,NA,May,1,2024,May_2024
+115,Thorndyke,Red,45,NA,NA,NA,May,1,2024,May_2024
+116,Thorndyke,Red,49,NA,NA,NA,May,1,2024,May_2024
